@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Percobaan dan Latihan - PRG4_M3_P2_030</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #2c3e50;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.2rem;
+        }
+        
+        /* BAGIAN BARU: Container untuk dua section */
+        .sections-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .section {
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .section-header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid;
+        }
+        
+        .latihan-section .section-header {
+            border-color: #2ecc71;
+            color: #2ecc71;
+        }
+        
+        .percobaan-section .section-header {
+            border-color: #e74c3c;
+            color: #e74c3c;
+        }
+        
+        .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+        
+        .section-subtitle {
+            color: #7f8c8d;
+            font-size: 1rem;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            border-left: 4px solid;
+        }
+        
+        .latihan-section .card {
+            border-left-color: #2ecc71;
+        }
+        
+        .percobaan-section .card {
+            border-left-color: #e74c3c;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .card-icon {
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .latihan-section .card-icon {
+            color: #2ecc71;
+        }
+        
+        .percobaan-section .card-icon {
+            color: #e74c3c;
+        }
+        
+        .card-title {
+            font-size: 1.3rem;
+            color: #2c3e50;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        
+        .card-description {
+            color: #7f8c8d;
+            margin-bottom: 18px;
+            flex-grow: 1;
+            text-align: center;
+            font-size: 0.95rem;
+        }
+        
+        .card-link {
+            display: block;
+            text-align: center;
+            padding: 10px 15px;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        
+        .card-link:hover {
+            transform: scale(1.05);
+        }
+        
+        .latihan-section .card-link {
+            background-color: #2ecc71;
+        }
+        
+        .latihan-section .card-link:hover {
+            background-color: #27ae60;
+        }
+        
+        .percobaan-section .card-link {
+            background-color: #e74c3c;
+        }
+        
+        .percobaan-section .card-link:hover {
+            background-color: #c0392b;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            color: white;
+            font-size: 0.9rem;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sections-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .section-title {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Percobaan dan Latihan - PRG4_M3_P2_030</h1>
+            <p class="subtitle">Kumpulan percobaan dan latihan pemrograman web</p>
+        </header>
+        
+        <!-- BAGIAN BARU: Container untuk dua section -->
+        <div class="sections-container">
+            <!-- SECTION LATIHAN -->
+            <section class="section latihan-section">
+                <div class="section-header">
+                    <h2 class="section-title">📚 Latihan</h2>
+                    <p class="section-subtitle">Kumpulan tugas dan latihan pemrograman</p>
+                </div>
+                
+                <div class="main-content">
+                    <div class="card">
+                        <div class="card-icon">📊</div>
+                        <h2 class="card-title">T5_030.html</h2>
+                        <a href="T6_030.html" class="card-link">Buka Tugas</a>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- SECTION PERCOBAAN -->
+            <section class="section percobaan-section">
+                <div class="section-header">
+                    <h2 class="section-title">🧪 Percobaan</h2>
+                    <p class="section-subtitle">Eksperimen dan pengembangan fitur tambahan</p>
+                </div>
+                
+                <div class="main-content">
+                    <div class="card">
+                        <div class="card-icon">🧪</div>
+                        <h2 class="card-title">P5_030.html</h2>
+                        <a href="P7_030.html" class="card-link">Buka Percobaan</a>
+                    </div>
+                </div>
+            </section>
+        </div>
+        
+        <div class="footer">
+            <p>&copy; 2025 - Tugas dan Percobaan Pemrograman Web</p>
+        </div>
+    </div>
+</body>
+</html>

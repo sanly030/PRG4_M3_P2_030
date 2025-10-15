@@ -1,0 +1,377 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Transaksi</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+
+  <style>
+    body {
+      background-color: #f8f9fa;
+      font-family: 'Tahoma', sans-serif;
+      padding: 20px;
+    }
+
+    .container {
+      margin-top: 30px;
+    }
+
+    .table-container {
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+      background-color: white;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .table thead th {
+      background-color: #343a40;
+      color: white;
+    }
+
+    .form-container {
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+      background-color: white;
+      padding: 20px;
+      margin-top: 20px;
+      display: none;
+    }
+
+    .badge-status {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .status-pending {
+      background-color: #ffc107;
+      color: #000;
+    }
+
+    .status-selesai {
+      background-color: #28a745;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="table-container">
+        <h1>Daftar Transaksi - P7_030</h1>
+        <button id="addTransactionBtn" class="btn btn-primary mb-3">+ Add Data</button>
+      <table id="transaction-table" class="table table-bordered table-hover">
+        <thead>
+          <tr>
+            <th>ID Transaksi</th>
+            <th>Tanggal Transaksi</th>
+            <th>ID Produk</th>
+            <th>Nama Produk</th>
+            <th>Jumlah</th>
+            <th>Total Harga</th>
+            <th>Status</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td colspan="8" class="text-center">Data transaksi akan muncul di sini...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="form-container" id="formContainer">
+    <h3 id="formTitle">Tambah Transaksi Baru</h3>
+    <form id="addTransaksiForm">
+      <div class="mb-3">
+        <label for="tanggalTransaksi" class="form-label">Tanggal Transaksi</label>
+        <input type="date" class="form-control" id="tanggalTransaksi" required>
+      </div>
+      <div class="mb-3">
+        <label for="idProduk" class="form-label">ID Produk</label>
+        <select class="form-control" id="idProduk" required>
+          <option value="">Pilih Produk</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label for="namaProduk" class="form-label">Nama Produk</label>
+        <input type="text" class="form-control" id="namaProduk" readonly>
+      </div>
+      <div class="mb-3">
+        <label for="hargaSatuan" class="form-label">Harga Satuan</label>
+        <input type="text" class="form-control" id="hargaSatuanDisplay" readonly>
+        <input type="hidden" id="hargaSatuan">
+      </div>
+      <div class="mb-3">
+        <label for="jumlah" class="form-label">Jumlah</label>
+        <input type="number" class="form-control" id="jumlah" min="1" required>
+      </div>
+      <div class="mb-3">
+        <label for="totalHarga" class="form-label">Total Harga</label>
+        <input type="text" class="form-control" id="totalHargaDisplay" readonly>
+        <input type="hidden" id="totalHarga">
+      </div>
+      <div class="mb-3">
+        <label for="statusTransaksi" class="form-label">Status</label>
+        <select class="form-control" id="statusTransaksi" required>
+          <option value="Pending">Pending</option>
+          <option value="Selesai">Selesai</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-success" id="submitBtn">Submit</button>
+      <button type="button" id="cancelBtn" class="btn btn-secondary">Cancel</button>
+    </form>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+
+  <script>
+    const readUrl = 'https://api.roniprsty.com/transaksi/read.php';
+    const createUrl = 'https://api.roniprsty.com/transaksi/create.php';
+    const updateUrl = 'https://api.roniprsty.com/transaksi/update.php';
+    const produkReadUrl = 'https://api.roniprsty.com/produk/read.php';
+
+    let produkList = [];
+    let transaksiList = [];
+
+    // Fungsi untuk format currency Rupiah
+    function formatRupiah(angka) {
+      return 'Rp ' + parseFloat(angka).toLocaleString('id-ID');
+    }
+
+    // Fungsi untuk mengambil data produk
+    async function getProducts() {
+      try {
+        let response = await fetch(produkReadUrl);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        produkList = await response.json();
+        
+        // Isi dropdown produk
+        let selectProduk = document.getElementById('idProduk');
+        selectProduk.innerHTML = '<option value="">Pilih Produk</option>';
+        
+        produkList.forEach(produk => {
+          let option = document.createElement('option');
+          option.value = produk.id;
+          option.textContent = `${produk.id} - ${produk.nama_produk}`;
+          option.dataset.nama = produk.nama_produk;
+          option.dataset.harga = produk.harga_jual;
+          selectProduk.appendChild(option);
+        });
+      } catch (error) {
+        console.error("Gagal mengambil data produk:", error);
+      }
+    }
+
+    // Event listener untuk perubahan produk
+    document.getElementById('idProduk').addEventListener('change', function() {
+      const selectedOption = this.options[this.selectedIndex];
+      if (selectedOption.value) {
+        const harga = selectedOption.dataset.harga;
+        document.getElementById('namaProduk').value = selectedOption.dataset.nama;
+        document.getElementById('hargaSatuan').value = harga;
+        document.getElementById('hargaSatuanDisplay').value = formatRupiah(harga);
+        hitungTotal();
+      } else {
+        document.getElementById('namaProduk').value = '';
+        document.getElementById('hargaSatuan').value = '';
+        document.getElementById('hargaSatuanDisplay').value = '';
+        document.getElementById('totalHarga').value = '';
+        document.getElementById('totalHargaDisplay').value = '';
+      }
+    });
+
+    // Event listener untuk perubahan jumlah
+    document.getElementById('jumlah').addEventListener('input', hitungTotal);
+
+    // Fungsi untuk menghitung total harga
+    function hitungTotal() {
+      const harga = parseFloat(document.getElementById('hargaSatuan').value) || 0;
+      const jumlah = parseInt(document.getElementById('jumlah').value) || 0;
+      const total = harga * jumlah;
+      document.getElementById('totalHarga').value = total;
+      document.getElementById('totalHargaDisplay').value = formatRupiah(total);
+    }
+
+    // Fungsi untuk mendapatkan class badge status
+    function getStatusBadgeClass(status) {
+      switch(status) {
+        case 'Pending':
+          return 'status-pending';
+        case 'Selesai':
+          return 'status-selesai';
+        default:
+          return 'status-pending';
+      }
+    }
+
+    // Fungsi untuk mengambil data transaksi
+    async function getTransactions() {
+      try {
+        let response = await fetch(readUrl);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        transaksiList = await response.json();
+        
+        let tableBody = document.querySelector('#transaction-table tbody');
+        tableBody.innerHTML = '';
+
+        transaksiList.forEach(transaction => {
+          const statusClass = getStatusBadgeClass(transaction.status_transaksi);
+          let row = `
+            <tr>
+              <td>${transaction.id_transaksi}</td>
+              <td>${transaction.tanggal_transaksi}</td>
+              <td>${transaction.id_produk}</td>
+              <td>${transaction.nama_produk}</td>
+              <td>${transaction.jumlah}</td>
+              <td>Rp ${parseFloat(transaction.total_harga).toLocaleString('id-ID')}</td>
+              <td><span class="badge-status ${statusClass}">${transaction.status_transaksi}</span></td>
+              <td>
+                <button class="btn btn-warning btn-sm" onclick="editTransaction('${transaction.id_transaksi}')">Edit</button>
+              </td>
+            </tr>
+          `;
+          tableBody.innerHTML += row;
+        });
+      } catch (error) {
+        console.error("Gagal mengambil data transaksi:", error);
+        document.querySelector('#transaction-table tbody').innerHTML = '<tr><td colspan="8" class="text-center">Tidak dapat mengambil data transaksi.</td></tr>';
+      }
+    }
+
+    // Tampilkan form untuk menambahkan transaksi baru
+    document.getElementById('addTransactionBtn').addEventListener('click', function() {
+      document.getElementById('formTitle').textContent = 'Tambah Transaksi Baru';
+      document.getElementById('submitBtn').textContent = 'Submit';
+      document.getElementById('addTransaksiForm').reset();
+      document.getElementById('addTransaksiForm').removeAttribute('data-id');
+      
+      // Clear display fields
+      document.getElementById('hargaSatuanDisplay').value = '';
+      document.getElementById('totalHargaDisplay').value = '';
+      
+      document.getElementById('formContainer').style.display = 'block';
+      
+      // Set tanggal hari ini sebagai default
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('tanggalTransaksi').value = today;
+    });
+
+    // Sembunyikan form saat tombol Cancel diklik
+    document.getElementById('cancelBtn').addEventListener('click', function() {
+      document.getElementById('formContainer').style.display = 'none';
+    });
+
+    // Handle form submission
+    document.getElementById('addTransaksiForm').addEventListener('submit', async function(event) {
+      event.preventDefault();
+
+      const id = this.dataset.id;
+      const tanggalTransaksi = document.getElementById('tanggalTransaksi').value;
+      const idProduk = document.getElementById('idProduk').value;
+      const namaProduk = document.getElementById('namaProduk').value;
+      const jumlah = document.getElementById('jumlah').value;
+      const totalHarga = document.getElementById('totalHarga').value;
+      const statusTransaksi = document.getElementById('statusTransaksi').value;
+
+      const transactionData = {
+        "tanggal_transaksi": tanggalTransaksi,
+        "id_produk": idProduk,
+        "nama_produk": namaProduk,
+        "jumlah": jumlah,
+        "total_harga": totalHarga,
+        "status_transaksi": statusTransaksi
+      };
+
+      try {
+        if (id) {
+          // Update transaksi
+          transactionData.id_transaksi = id;
+          let response = await fetch(updateUrl, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(transactionData)
+          });
+
+          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+          alert('Transaksi berhasil diperbarui!');
+        } else {
+          // Tambah transaksi baru
+          let response = await fetch(createUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(transactionData)
+          });
+
+          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+          alert('Transaksi berhasil ditambahkan!');
+        }
+
+        getTransactions();
+        document.getElementById('formContainer').style.display = 'none';
+        
+      } catch (error) {
+        console.error("Gagal mengirim data transaksi:", error);
+        alert('Gagal mengirim data transaksi.');
+      }
+    });
+
+    // Fungsi untuk edit transaksi - mengambil data dari transaksiList yang sudah di-fetch
+    async function editTransaction(id) {
+      try {
+        // Cari data transaksi dari array transaksiList yang sudah ada
+        const transaction = transaksiList.find(t => t.id_transaksi === id);
+
+        if (!transaction) {
+          throw new Error('Data transaksi tidak ditemukan.');
+        }
+
+        // Isi form dengan data transaksi
+        document.getElementById('tanggalTransaksi').value = transaction.tanggal_transaksi;
+        document.getElementById('idProduk').value = transaction.id_produk;
+        
+        // Trigger event change untuk mengisi nama produk dan harga
+        const event = new Event('change');
+        document.getElementById('idProduk').dispatchEvent(event);
+        
+        // Set jumlah dan status
+        document.getElementById('jumlah').value = transaction.jumlah;
+        document.getElementById('statusTransaksi').value = transaction.status_transaksi;
+        
+        // Hitung ulang total
+        hitungTotal();
+
+        // Ubah judul dan tombol untuk mode edit
+        document.getElementById('formTitle').textContent = 'Update Data Transaksi';
+        document.getElementById('submitBtn').textContent = 'Update';
+        document.getElementById('addTransaksiForm').dataset.id = transaction.id_transaksi;
+        document.getElementById('formContainer').style.display = 'block';
+
+      } catch (error) {
+        console.error("Gagal mengambil data transaksi:", error);
+        alert('Terjadi kesalahan saat mengambil data transaksi.');
+      }
+    }
+
+    // Inisialisasi halaman
+    getProducts();
+    getTransactions();
+  </script>
+  
+</body>
+</html>
