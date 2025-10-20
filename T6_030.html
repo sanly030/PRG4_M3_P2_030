@@ -1,377 +1,611 @@
-<html lang="en">
+<!DOCTYPE html>
+<html lang="id">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Data Transaksi</title>
-
-  <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-
+  <title>Manajemen Transaksi</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
     body {
-      background-color: #f8f9fa;
-      font-family: 'Tahoma', sans-serif;
-      padding: 20px;
+      background-color: #f5f5f5;
+      padding: 20px 0;
     }
 
     .container {
-      margin-top: 30px;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+      margin-top: 20px;
+    }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-box {
+      background-color: white;
+      padding: 30px;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      max-height: 90vh;
+      overflow-y: auto;
     }
 
     .table-container {
-      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-      border-radius: 10px;
-      background-color: white;
-      padding: 20px;
+      margin-top: 30px;
+      overflow-x: auto;
+    }
+
+    .btn-custom {
+      margin-right: 10px;
+      margin-bottom: 10px;
     }
 
     h1 {
-      text-align: center;
+      color: #333;
       margin-bottom: 30px;
+      border-bottom: 3px solid #007bff;
+      padding-bottom: 10px;
     }
 
-    .table thead th {
-      background-color: #343a40;
-      color: white;
-    }
-
-    .form-container {
-      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-      border-radius: 10px;
-      background-color: white;
-      padding: 20px;
+    .alert {
       margin-top: 20px;
-      display: none;
-    }
-
-    .badge-status {
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-    }
-
-    .status-pending {
-      background-color: #ffc107;
-      color: #000;
-    }
-
-    .status-selesai {
-      background-color: #28a745;
-      color: white;
     }
   </style>
 </head>
-<body>
 
+<body>
   <div class="container">
+    <h1>📋 Manajemen Transaksi Produk</h1>
+
+    <button class="btn btn-primary btn-custom" id="addBtn">Tambah Transaksi</button>
+
     <div class="table-container">
-        <h1>Daftar Transaksi - P7_030</h1>
-        <button id="addTransactionBtn" class="btn btn-primary mb-3">+ Add Data</button>
-      <table id="transaction-table" class="table table-bordered table-hover">
-        <thead>
+      <table class="table table-striped table-hover">
+        <thead class="table-dark">
           <tr>
-            <th>ID Transaksi</th>
-            <th>Tanggal Transaksi</th>
-            <th>ID Produk</th>
-            <th>Nama Produk</th>
+            <th>ID</th>
+            <th>Tanggal</th>
+            <th>Produk</th>
             <th>Jumlah</th>
             <th>Total Harga</th>
             <th>Status</th>
             <th>Aksi</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody id="transactionTable">
           <tr>
-            <td colspan="8" class="text-center">Data transaksi akan muncul di sini...</td>
+            <td colspan="7" class="text-center">Memuat data...</td>
           </tr>
         </tbody>
       </table>
     </div>
+
+    <div id="alertContainer"></div>
   </div>
 
-  <div class="form-container" id="formContainer">
-    <h3 id="formTitle">Tambah Transaksi Baru</h3>
-    <form id="addTransaksiForm">
-      <div class="mb-3">
-        <label for="tanggalTransaksi" class="form-label">Tanggal Transaksi</label>
-        <input type="date" class="form-control" id="tanggalTransaksi" required>
-      </div>
-      <div class="mb-3">
-        <label for="idProduk" class="form-label">ID Produk</label>
-        <select class="form-control" id="idProduk" required>
-          <option value="">Pilih Produk</option>
-        </select>
-      </div>
-      <div class="mb-3">
-        <label for="namaProduk" class="form-label">Nama Produk</label>
-        <input type="text" class="form-control" id="namaProduk" readonly>
-      </div>
-      <div class="mb-3">
-        <label for="hargaSatuan" class="form-label">Harga Satuan</label>
-        <input type="text" class="form-control" id="hargaSatuanDisplay" readonly>
-        <input type="hidden" id="hargaSatuan">
-      </div>
-      <div class="mb-3">
-        <label for="jumlah" class="form-label">Jumlah</label>
-        <input type="number" class="form-control" id="jumlah" min="1" required>
-      </div>
-      <div class="mb-3">
-        <label for="totalHarga" class="form-label">Total Harga</label>
-        <input type="text" class="form-control" id="totalHargaDisplay" readonly>
-        <input type="hidden" id="totalHarga">
-      </div>
-      <div class="mb-3">
-        <label for="statusTransaksi" class="form-label">Status</label>
-        <select class="form-control" id="statusTransaksi" required>
-          <option value="Pending">Pending</option>
-          <option value="Selesai">Selesai</option>
-        </select>
-      </div>
-      <button type="submit" class="btn btn-success" id="submitBtn">Submit</button>
-      <button type="button" id="cancelBtn" class="btn btn-secondary">Cancel</button>
-    </form>
+  <!-- Modal Form -->
+  <div class="modal-overlay" id="formModal">
+    <div class="modal-box">
+      <h3 id="formTitle">Tambah Transaksi</h3>
+      <form id="transactionForm">
+        <div class="mb-3">
+          <label for="tanggal_transaksi" class="form-label">Tanggal Transaksi</label>
+          <input type="date" class="form-control" id="tanggal_transaksi" readonly style="background-color: #e9ecef;"
+            required>
+          <small class="text-muted">Tanggal otomatis sesuai hari ini</small>
+        </div>
+        <div class="mb-3">
+          <label for="id_produk" class="form-label">Produk</label>
+          <select class="form-control" id="id_produk" required>
+            <option value="">-- Pilih Produk --</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label for="jumlah" class="form-label">Jumlah/Kuantitas</label>
+          <input type="number" class="form-control" id="jumlah" min="1" placeholder="Pilih produk terlebih dahulu"
+            required>
+          <small class="text-muted">Stok akan dicek otomatis</small>
+        </div>
+        <div class="mb-3">
+          <label for="harga_satuan" class="form-label">Harga Satuan</label>
+          <input type="number" class="form-control" id="harga_satuan" step="0.01" readonly
+            style="background-color: #e9ecef;" placeholder="Otomatis dari produk">
+        </div>
+        <div class="mb-3">
+          <label for="total_harga" class="form-label">Total Harga</label>
+          <input type="number" class="form-control" id="total_harga" step="0.01" readonly
+            style="background-color: #e9ecef;">
+        </div>
+        <div class="mb-3">
+          <label for="status_transaksi" class="form-label">Status Transaksi</label>
+          <select class="form-control" id="status_transaksi" required readonly style="background-color: #e9ecef;">
+            <option value="Pending" selected>Pending</option>
+          </select>
+          <small class="text-muted">Status otomatis Pending, gunakan tombol "Selesaikan" untuk mengubah ke
+            Selesai</small>
+        </div>
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-success" id="submitBtn">Simpan</button>
+          <button type="button" class="btn btn-secondary" id="cancelBtn">Batal</button>
+        </div>
+      </form>
+    </div>
   </div>
 
-  <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
   <script>
-    const readUrl = 'https://api.roniprsty.com/transaksi/read.php';
-    const createUrl = 'https://api.roniprsty.com/transaksi/create.php';
-    const updateUrl = 'https://api.roniprsty.com/transaksi/update.php';
-    const produkReadUrl = 'https://api.roniprsty.com/produk/read.php';
+    const readTransaksiUrl = 'https://api.roniprsty.com/transaksi/read.php';
+    const createTransaksiUrl = 'https://api.roniprsty.com/transaksi/create.php';
+    const updateTransaksiUrl = 'https://api.roniprsty.com/transaksi/update.php';
+    const readProdukUrl = 'https://api.roniprsty.com/produk/read.php';
 
-    let produkList = [];
-    let transaksiList = [];
+    let editingId = null;
+    let editingOldJumlah = 0; // Menyimpan jumlah lama saat edit
+    let produkData = [];
+    let formModal = document.getElementById('formModal');
+    let transactionForm = document.getElementById('transactionForm');
+    let addBtn = document.getElementById('addBtn');
+    let cancelBtn = document.getElementById('cancelBtn');
+    let submitBtn = document.getElementById('submitBtn');
+    let formTitle = document.getElementById('formTitle');
 
-    // Fungsi untuk format currency Rupiah
-    function formatRupiah(angka) {
-      return 'Rp ' + parseFloat(angka).toLocaleString('id-ID');
-    }
-
-    // Fungsi untuk mengambil data produk
-    async function getProducts() {
-      try {
-        let response = await fetch(produkReadUrl);
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        produkList = await response.json();
-        
-        // Isi dropdown produk
-        let selectProduk = document.getElementById('idProduk');
-        selectProduk.innerHTML = '<option value="">Pilih Produk</option>';
-        
-        produkList.forEach(produk => {
-          let option = document.createElement('option');
-          option.value = produk.id;
-          option.textContent = `${produk.id} - ${produk.nama_produk}`;
-          option.dataset.nama = produk.nama_produk;
-          option.dataset.harga = produk.harga_jual;
-          selectProduk.appendChild(option);
-        });
-      } catch (error) {
-        console.error("Gagal mengambil data produk:", error);
-      }
-    }
-
-    // Event listener untuk perubahan produk
-    document.getElementById('idProduk').addEventListener('change', function() {
-      const selectedOption = this.options[this.selectedIndex];
-      if (selectedOption.value) {
-        const harga = selectedOption.dataset.harga;
-        document.getElementById('namaProduk').value = selectedOption.dataset.nama;
-        document.getElementById('hargaSatuan').value = harga;
-        document.getElementById('hargaSatuanDisplay').value = formatRupiah(harga);
-        hitungTotal();
-      } else {
-        document.getElementById('namaProduk').value = '';
-        document.getElementById('hargaSatuan').value = '';
-        document.getElementById('hargaSatuanDisplay').value = '';
-        document.getElementById('totalHarga').value = '';
-        document.getElementById('totalHargaDisplay').value = '';
-      }
+    // Load data saat halaman dimuat
+    window.addEventListener('load', () => {
+      loadProduk();
+      getTransactions();
+      setupCalculation();
+      setupProdukChange();
     });
 
-    // Event listener untuk perubahan jumlah
-    document.getElementById('jumlah').addEventListener('input', hitungTotal);
+    // Fungsi untuk memuat data produk
+    async function loadProduk() {
+      try {
+        const response = await fetch(readProdukUrl);
+        const result = await response.json();
 
-    // Fungsi untuk menghitung total harga
-    function hitungTotal() {
-      const harga = parseFloat(document.getElementById('hargaSatuan').value) || 0;
-      const jumlah = parseInt(document.getElementById('jumlah').value) || 0;
-      const total = harga * jumlah;
-      document.getElementById('totalHarga').value = total;
-      document.getElementById('totalHargaDisplay').value = formatRupiah(total);
-    }
+        const produkSelect = document.getElementById('id_produk');
+        produkSelect.innerHTML = '<option value="">-- Pilih Produk --</option>';
 
-    // Fungsi untuk mendapatkan class badge status
-    function getStatusBadgeClass(status) {
-      switch(status) {
-        case 'Pending':
-          return 'status-pending';
-        case 'Selesai':
-          return 'status-selesai';
-        default:
-          return 'status-pending';
+        let produkList = Array.isArray(result) ? result : (result.data || result);
+
+        if (produkList && produkList.length > 0) {
+          produkData = produkList;
+          produkList.forEach(produk => {
+            const option = document.createElement('option');
+            option.value = produk.id;
+            const namaProduk = produk.nama_produk || produk.nama;
+            const stok = produk.stok || produk.stock || 0;
+            const hargaJual = produk.harga_jual || 0;
+
+            option.textContent = `${namaProduk} (Stok: ${stok}, Harga: Rp${parseFloat(hargaJual).toLocaleString('id-ID')})`;
+            option.dataset.stok = stok;
+            option.dataset.harga = hargaJual;
+            option.dataset.nama = namaProduk;
+            produkSelect.appendChild(option);
+          });
+          console.log('Produk berhasil dimuat:', produkList);
+        } else {
+          console.log('Tidak ada data produk');
+        }
+      } catch (error) {
+        console.error('Error loading produk:', error);
+        showAlert('Gagal memuat data produk', 'danger');
       }
     }
+
+    // Setup event ketika produk dipilih
+    function setupProdukChange() {
+      const produkSelect = document.getElementById('id_produk');
+      const hargaInput = document.getElementById('harga_satuan');
+      const jumlahInput = document.getElementById('jumlah');
+
+      produkSelect.addEventListener('change', function () {
+        const selectedOption = this.options[this.selectedIndex];
+        if (selectedOption.value) {
+          const harga = selectedOption.dataset.harga;
+          const stok = selectedOption.dataset.stok;
+
+          hargaInput.value = harga;
+          jumlahInput.max = stok;
+          jumlahInput.placeholder = `Maksimal: ${stok} item`;
+
+          hargaInput.dispatchEvent(new Event('input'));
+        } else {
+          hargaInput.value = '';
+          jumlahInput.max = '';
+          jumlahInput.placeholder = 'Pilih produk terlebih dahulu';
+        }
+      });
+    }
+
+    // Setup auto calculation untuk total
+    function setupCalculation() {
+      const jumlahInput = document.getElementById('jumlah');
+      const hargaInput = document.getElementById('harga_satuan');
+      const totalInput = document.getElementById('total_harga');
+      const produkSelect = document.getElementById('id_produk');
+
+      function calculateTotal() {
+        const jumlah = parseFloat(jumlahInput.value) || 0;
+        const harga = parseFloat(hargaInput.value) || 0;
+        const total = jumlah * harga;
+        totalInput.value = total.toFixed(2);
+
+        const selectedOption = produkSelect.options[produkSelect.selectedIndex];
+        if (selectedOption.value) {
+          const stokTersedia = parseFloat(selectedOption.dataset.stok) || 0;
+
+          // Jika sedang edit, tambahkan stok lama ke stok tersedia
+          const stokEfektif = editingId ? stokTersedia + editingOldJumlah : stokTersedia;
+
+          if (jumlah > stokEfektif) {
+            jumlahInput.setCustomValidity(`Stok tidak mencukupi! Stok tersedia: ${stokEfektif}`);
+          } else {
+            jumlahInput.setCustomValidity('');
+          }
+        }
+      }
+
+      jumlahInput.addEventListener('input', calculateTotal);
+      hargaInput.addEventListener('input', calculateTotal);
+    }
+
+    // Event listener untuk tombol tambah
+    addBtn.addEventListener('click', function () {
+      editingId = null;
+      editingOldJumlah = 0;
+      formTitle.textContent = 'Tambah Transaksi';
+      submitBtn.textContent = 'Simpan';
+      transactionForm.reset();
+
+      // Set tanggal hari ini sebagai default
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('tanggal_transaksi').value = today;
+
+      formModal.classList.add('active');
+    });
+
+    // Event listener untuk tombol batal
+    cancelBtn.addEventListener('click', function () {
+      formModal.classList.remove('active');
+      transactionForm.reset();
+      editingId = null;
+      editingOldJumlah = 0;
+    });
+
+    // Event listener untuk submit form
+    transactionForm.addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const tanggal_transaksi = document.getElementById('tanggal_transaksi').value;
+      const id_produk = document.getElementById('id_produk').value;
+      const jumlah = document.getElementById('jumlah').value;
+      const total_harga = document.getElementById('total_harga').value;
+      const status_transaksi = 'Pending'; // Selalu Pending untuk transaksi baru
+
+      const data = {
+        tanggal_transaksi: tanggal_transaksi,
+        id_produk: id_produk,
+        jumlah: jumlah,
+        total_harga: total_harga,
+        status_transaksi: status_transaksi
+      };
+
+      // Hanya bisa tambah transaksi baru, tidak ada edit
+      await addTransaction(data);
+    });
 
     // Fungsi untuk mengambil data transaksi
     async function getTransactions() {
       try {
-        let response = await fetch(readUrl);
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        transaksiList = await response.json();
-        
-        let tableBody = document.querySelector('#transaction-table tbody');
+        const response = await fetch(readTransaksiUrl);
+        const result = await response.json();
+
+        let tableBody = document.getElementById('transactionTable');
         tableBody.innerHTML = '';
 
-        transaksiList.forEach(transaction => {
-          const statusClass = getStatusBadgeClass(transaction.status_transaksi);
-          let row = `
-            <tr>
-              <td>${transaction.id_transaksi}</td>
-              <td>${transaction.tanggal_transaksi}</td>
-              <td>${transaction.id_produk}</td>
-              <td>${transaction.nama_produk}</td>
-              <td>${transaction.jumlah}</td>
-              <td>Rp ${parseFloat(transaction.total_harga).toLocaleString('id-ID')}</td>
-              <td><span class="badge-status ${statusClass}">${transaction.status_transaksi}</span></td>
-              <td>
-                <button class="btn btn-warning btn-sm" onclick="editTransaction('${transaction.id_transaksi}')">Edit</button>
-              </td>
-            </tr>
-          `;
-          tableBody.innerHTML += row;
-        });
-      } catch (error) {
-        console.error("Gagal mengambil data transaksi:", error);
-        document.querySelector('#transaction-table tbody').innerHTML = '<tr><td colspan="8" class="text-center">Tidak dapat mengambil data transaksi.</td></tr>';
-      }
-    }
+        let transaksiList = Array.isArray(result) ? result : (result.data || result);
 
-    // Tampilkan form untuk menambahkan transaksi baru
-    document.getElementById('addTransactionBtn').addEventListener('click', function() {
-      document.getElementById('formTitle').textContent = 'Tambah Transaksi Baru';
-      document.getElementById('submitBtn').textContent = 'Submit';
-      document.getElementById('addTransaksiForm').reset();
-      document.getElementById('addTransaksiForm').removeAttribute('data-id');
-      
-      // Clear display fields
-      document.getElementById('hargaSatuanDisplay').value = '';
-      document.getElementById('totalHargaDisplay').value = '';
-      
-      document.getElementById('formContainer').style.display = 'block';
-      
-      // Set tanggal hari ini sebagai default
-      const today = new Date().toISOString().split('T')[0];
-      document.getElementById('tanggalTransaksi').value = today;
-    });
+        if (transaksiList && transaksiList.length > 0) {
+          transaksiList.forEach(transaction => {
+            const statusBadge = transaction.status_transaksi === 'Selesai'
+              ? 'bg-success'
+              : 'bg-warning';
 
-    // Sembunyikan form saat tombol Cancel diklik
-    document.getElementById('cancelBtn').addEventListener('click', function() {
-      document.getElementById('formContainer').style.display = 'none';
-    });
-
-    // Handle form submission
-    document.getElementById('addTransaksiForm').addEventListener('submit', async function(event) {
-      event.preventDefault();
-
-      const id = this.dataset.id;
-      const tanggalTransaksi = document.getElementById('tanggalTransaksi').value;
-      const idProduk = document.getElementById('idProduk').value;
-      const namaProduk = document.getElementById('namaProduk').value;
-      const jumlah = document.getElementById('jumlah').value;
-      const totalHarga = document.getElementById('totalHarga').value;
-      const statusTransaksi = document.getElementById('statusTransaksi').value;
-
-      const transactionData = {
-        "tanggal_transaksi": tanggalTransaksi,
-        "id_produk": idProduk,
-        "nama_produk": namaProduk,
-        "jumlah": jumlah,
-        "total_harga": totalHarga,
-        "status_transaksi": statusTransaksi
-      };
-
-      try {
-        if (id) {
-          // Update transaksi
-          transactionData.id_transaksi = id;
-          let response = await fetch(updateUrl, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(transactionData)
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                            <td>${transaction.id_transaksi}</td>
+                            <td>${transaction.tanggal_transaksi}</td>
+                            <td>${transaction.nama_produk || 'ID: ' + transaction.id_produk}</td>
+                            <td>${transaction.jumlah}</td>
+                            <td><strong>Rp${parseFloat(transaction.total_harga).toLocaleString('id-ID', { minimumFractionDigits: 2 })}</strong></td>
+                            <td><span class="badge ${statusBadge}">${transaction.status_transaksi}</span></td>
+                            <td>
+                                ${transaction.status_transaksi === 'Pending' ?
+                `<button class="btn btn-sm btn-success" onclick="selesaikanTransaction('${transaction.id_transaksi}')">Selesaikan</button>` :
+                `<span class="text-muted">Selesai</span>`
+              }
+                            </td>
+                        `;
+            tableBody.appendChild(row);
           });
-
-          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-          alert('Transaksi berhasil diperbarui!');
         } else {
-          // Tambah transaksi baru
-          let response = await fetch(createUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(transactionData)
-          });
-
-          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-          alert('Transaksi berhasil ditambahkan!');
+          tableBody.innerHTML = '<tr><td colspan="7" class="text-center">Tidak ada data transaksi</td></tr>';
         }
-
-        getTransactions();
-        document.getElementById('formContainer').style.display = 'none';
-        
       } catch (error) {
-        console.error("Gagal mengirim data transaksi:", error);
-        alert('Gagal mengirim data transaksi.');
-      }
-    });
-
-    // Fungsi untuk edit transaksi - mengambil data dari transaksiList yang sudah di-fetch
-    async function editTransaction(id) {
-      try {
-        // Cari data transaksi dari array transaksiList yang sudah ada
-        const transaction = transaksiList.find(t => t.id_transaksi === id);
-
-        if (!transaction) {
-          throw new Error('Data transaksi tidak ditemukan.');
-        }
-
-        // Isi form dengan data transaksi
-        document.getElementById('tanggalTransaksi').value = transaction.tanggal_transaksi;
-        document.getElementById('idProduk').value = transaction.id_produk;
-        
-        // Trigger event change untuk mengisi nama produk dan harga
-        const event = new Event('change');
-        document.getElementById('idProduk').dispatchEvent(event);
-        
-        // Set jumlah dan status
-        document.getElementById('jumlah').value = transaction.jumlah;
-        document.getElementById('statusTransaksi').value = transaction.status_transaksi;
-        
-        // Hitung ulang total
-        hitungTotal();
-
-        // Ubah judul dan tombol untuk mode edit
-        document.getElementById('formTitle').textContent = 'Update Data Transaksi';
-        document.getElementById('submitBtn').textContent = 'Update';
-        document.getElementById('addTransaksiForm').dataset.id = transaction.id_transaksi;
-        document.getElementById('formContainer').style.display = 'block';
-
-      } catch (error) {
-        console.error("Gagal mengambil data transaksi:", error);
-        alert('Terjadi kesalahan saat mengambil data transaksi.');
+        console.error('Error:', error);
+        showAlert('Gagal mengambil data transaksi', 'danger');
+        document.getElementById('transactionTable').innerHTML = '<tr><td colspan="7" class="text-center text-danger">Error: ' + error.message + '</td></tr>';
       }
     }
 
-    // Inisialisasi halaman
-    getProducts();
-    getTransactions();
+    // Fungsi untuk menambah transaksi
+    async function addTransaction(data) {
+      try {
+        const produkSelect = document.getElementById('id_produk');
+        const selectedOption = produkSelect.options[produkSelect.selectedIndex];
+        const stokTersedia = parseFloat(selectedOption.dataset.stok) || 0;
+        const jumlah = parseFloat(data.jumlah);
+
+        if (jumlah > stokTersedia) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Stok Tidak Cukup!',
+            text: `Stok hanya tersedia ${stokTersedia} item`,
+            confirmButtonColor: '#ffc107'
+          });
+          return;
+        }
+
+        console.log('Data yang dikirim:', data);
+        console.log('URL:', createTransaksiUrl);
+
+        const response = await fetch(createTransaksiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+
+        console.log('Response status:', response.status);
+        const responseText = await response.text();
+        console.log('Response text:', responseText);
+
+        let result;
+        try {
+          result = JSON.parse(responseText);
+        } catch (e) {
+          console.error('Error parsing JSON:', e);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: 'Response bukan JSON yang valid: ' + responseText
+          });
+          return;
+        }
+
+        console.log('Result:', result);
+
+        // Cek berbagai format response yang mungkin
+        if (result.success === true || result.status === 'success' || result.message === 'Transaksi berhasil ditambahkan' || response.status === 200 || response.status === 201) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Berhasil!',
+            text: 'Transaksi berhasil ditambahkan',
+            timer: 2000,
+            showConfirmButton: false
+          });
+          formModal.classList.remove('active');
+          transactionForm.reset();
+          setTimeout(() => {
+            getTransactions();
+            loadProduk();
+          }, 500);
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Gagal!',
+            text: 'Gagal menambah transaksi: ' + (result.message || result.error || JSON.stringify(result))
+          });
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error!',
+          text: 'Terjadi kesalahan: ' + error.message
+        });
+      }
+    }
+
+    // Fungsi untuk menyelesaikan transaksi (ubah status dari Pending ke Selesai)
+    async function selesaikanTransaction(id) {
+      Swal.fire({
+        title: 'Selesaikan Transaksi?',
+        text: "Status transaksi akan diubah menjadi 'Selesai'",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Ya, Selesaikan!',
+        cancelButtonText: 'Batal'
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          try {
+            const data = {
+              id_transaksi: id,
+              status_transaksi: 'Selesai'
+            };
+
+            console.log('Data update status:', data);
+
+            const response = await fetch(updateTransaksiUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(data)
+            });
+
+            const responseText = await response.text();
+            console.log('Response:', responseText);
+
+            let apiResult;
+            try {
+              apiResult = JSON.parse(responseText);
+            } catch (e) {
+              console.error('Error parsing JSON:', e);
+            }
+
+            if (response.ok || apiResult?.success || apiResult?.message) {
+              Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: 'Transaksi telah diselesaikan',
+                timer: 2000,
+                showConfirmButton: false
+              });
+              setTimeout(() => {
+                getTransactions();
+                loadProduk();
+              }, 500);
+            } else {
+              throw new Error('Gagal menyelesaikan transaksi');
+            }
+          } catch (error) {
+            console.error('Error:', error);
+            Swal.fire({
+              icon: 'error',
+              title: 'Gagal!',
+              text: 'Terjadi kesalahan: ' + error.message
+            });
+          }
+        }
+      });
+    }
+
+    // Fungsi untuk mengedit transaksi
+    function editTransaction(id, tanggal, id_produk, jumlah, total, status) {
+      editingId = id;
+      editingOldJumlah = parseFloat(jumlah); // Simpan jumlah lama
+      formTitle.textContent = 'Ubah Transaksi';
+      submitBtn.textContent = 'Update';
+
+      document.getElementById('tanggal_transaksi').value = tanggal;
+      document.getElementById('id_produk').value = id_produk;
+
+      // Trigger change event untuk set harga
+      const produkSelect = document.getElementById('id_produk');
+      produkSelect.dispatchEvent(new Event('change'));
+
+      document.getElementById('jumlah').value = jumlah;
+      document.getElementById('total_harga').value = total;
+      document.getElementById('status_transaksi').value = status;
+
+      formModal.classList.add('active');
+    }
+
+    // Fungsi untuk mengupdate transaksi
+    async function updateTransaction(data) {
+      try {
+        // Validasi stok saat update
+        const produkSelect = document.getElementById('id_produk');
+        const selectedOption = produkSelect.options[produkSelect.selectedIndex];
+        const stokTersedia = parseFloat(selectedOption.dataset.stok) || 0;
+        const jumlahBaru = parseFloat(data.jumlah);
+
+        // Stok efektif = stok saat ini + jumlah transaksi lama
+        const stokEfektif = stokTersedia + editingOldJumlah;
+
+        if (jumlahBaru > stokEfektif) {
+          showAlert(`Gagal! Stok tidak mencukupi. Stok tersedia: ${stokEfektif}`, 'danger');
+          return;
+        }
+
+        console.log('Data yang dikirim untuk update:', data);
+        console.log('URL:', updateTransaksiUrl);
+        console.log('Stok lama:', editingOldJumlah, 'Stok baru:', jumlahBaru, 'Stok efektif:', stokEfektif);
+
+        const response = await fetch(updateTransaksiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+
+        console.log('Response status:', response.status);
+        const responseText = await response.text();
+        console.log('Response text:', responseText);
+
+        let result;
+        try {
+          result = JSON.parse(responseText);
+        } catch (e) {
+          console.error('Error parsing JSON:', e);
+          showAlert('Error: Response bukan JSON yang valid. Response: ' + responseText, 'danger');
+          return;
+        }
+
+        console.log('Result:', result);
+
+        // Cek berbagai format response yang mungkin
+        if (result.success === true || result.status === 'success' || result.message === 'Transaksi berhasil diperbarui' || result.message === 'Transaksi berhasil diupdate' || response.status === 200) {
+          showAlert('Transaksi berhasil diperbarui!', 'success');
+          formModal.classList.remove('active');
+          transactionForm.reset();
+          editingId = null;
+          editingOldJumlah = 0;
+          setTimeout(() => {
+            getTransactions();
+            loadProduk();
+          }, 500);
+        } else {
+          showAlert('Gagal memperbarui transaksi: ' + (result.message || result.error || JSON.stringify(result)), 'danger');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showAlert('Terjadi kesalahan: ' + error.message, 'danger');
+      }
+    }
+
+    // Fungsi untuk menampilkan alert
+    function showAlert(message, type) {
+      const alertContainer = document.getElementById('alertContainer');
+      const alert = document.createElement('div');
+      alert.className = `alert alert-${type} alert-dismissible fade show`;
+      alert.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+      alertContainer.innerHTML = '';
+      alertContainer.appendChild(alert);
+
+      setTimeout(() => {
+        alert.remove();
+      }, 5000);
+    }
   </script>
-  
 </body>
+
 </html>
